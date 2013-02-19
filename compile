@@ -1,0 +1,3 @@
+g++ -Wextra -Wall LZW-a.cpp main.cpp -o a.out
+g++ -Wextra -Wall LZW-b.cpp main.cpp -o b.out
+
