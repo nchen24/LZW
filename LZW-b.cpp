@@ -4,16 +4,11 @@
 #include "LZW-a.h"
 using namespace std;
 
-struct OneCode{
-  unsigned char left;
-  unsigned char right;
-};
-
-static inline OneCode shortToBytes(uint16_t code){
-  OneCode codeInBytes;
-  codeInBytes.left  = code >> 8;     //Shift right to get left 8 bits
-  codeInBytes.right = code & 0x00ff; //Mask off the left 8 bits
-  return codeInBytes;
+static inline void printShortAsBytes(uint16_t code){
+  unsigned char left  = code >> 8;     //Shift right to get left 8 bits
+  unsigned char right = code & 0x00ff; //Mask off the left 8 bits
+  putc(left,  stdout); 
+  putc(right, stdout); 
 }
 
 LZW::LZW(char *fileName, char runMode){
@@ -53,20 +48,15 @@ void LZW::compressLZW(){
       assert(nextCode != 65535);
 
       curString.erase(curString.size() - 1);
-      OneCode temp = shortToBytes(codes[curString]);
-      putc(temp.left,  stdout); // Leftmost  8 bits
-      putc(temp.right, stdout); // Rightmost 8 bits
+      printShortAsBytes(codes[curString]);
 
       curString = c;
     }
     it++;
   }
 
-  if(codes.count(curString)){
-      OneCode temp = shortToBytes(codes[curString]);
-      putc(temp.left,  stdout); // Leftmost  8 bits
-      putc(temp.right, stdout); // Rightmost 8 bits
-  }
+  if(codes.count(curString))
+      printShortAsBytes(codes[curString]);
 
   putc(0x01, stdout); putc(0x00, stdout); // EOF marker
 }
