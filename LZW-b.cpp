@@ -4,6 +4,18 @@
 #include "LZW-a.h"
 using namespace std;
 
+struct OneCode{
+  unsigned char left;
+  unsigned char right;
+};
+
+static inline OneCode shortToBytes(uint16_t code){
+  OneCode codeInBytes;
+  codeInBytes.left  = code >> 8;     //Shift right to get left 8 bits
+  codeInBytes.right = code & 0x00ff; //Mask off the left 8 bits
+  return codeInBytes;
+}
+
 LZW::LZW(char *fileName, char runMode){
   mode = runMode;
   fp = fopen(fileName, "r");
@@ -38,21 +50,22 @@ void LZW::compressLZW(){
     if(!codes.count(curString)){
       codes[curString] = nextCode;
       nextCode++;
-      if(nextCode >= 65535){
-        cerr << "eojfirelkk\n";
-      }
+      assert(nextCode != 65535);
 
       curString.erase(curString.size() - 1);
-      uint16_t temp = codes[curString];
-      unsigned char left  = temp >> 8;
-      unsigned char right = temp & 0x00ff;
-
-      putc(left,  stdout); // Leftmost  8 bits
-      putc(right, stdout); // Rightmost 8 bits
+      OneCode temp = shortToBytes(codes[curString]);
+      putc(temp.left,  stdout); // Leftmost  8 bits
+      putc(temp.right, stdout); // Rightmost 8 bits
 
       curString = c;
     }
     it++;
+  }
+
+  if(codes.count(curString)){
+      OneCode temp = shortToBytes(codes[curString]);
+      putc(temp.left,  stdout); // Leftmost  8 bits
+      putc(temp.right, stdout); // Rightmost 8 bits
   }
 
   putc(0x01, stdout); putc(0x00, stdout); // EOF marker
@@ -66,15 +79,13 @@ void LZW::extractLZW(){
   uint16_t code;
 
   string s;
+  int c;
   ifstream fin("out");
-  do{
-    int temp = getc(fp);
-    if(feof(fp))
-      break;
-    code = temp << 8;
-    temp = getc(fp);
+  while((c= getc(fp)) != EOF){
+    code = c << 8;
+    c = getc(fp);
     assert(!feof(fp));
-    code += temp;
+    code += c;
     
     if (code == 256){
       cerr << "Normal break\n";
@@ -91,6 +102,6 @@ void LZW::extractLZW(){
     }
     prevString = curString;
 
-  }while(1);
+  }
 
 }
