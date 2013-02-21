@@ -1,6 +1,6 @@
 #include <map>
 #include <string>
-//using namespace std;
+#include <stdint.h>
 
 class LZW{
   public:
@@ -16,6 +16,6 @@ class LZW{
     void extractLZW();
 
     std::map<std::string, unsigned int> codes;
-    std::map<unsigned int, std::string> strings;
+    std::map<uint16_t, std::string> strings;
 
 };

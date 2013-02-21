@@ -6,20 +6,20 @@ using namespace std;
 
 int main(int argc, char* argv[]){
   if (argc != 3){
-    cerr << "args fail\n";
+    fprintf(stderr, "Improper number of arguments.\n");
     fprintf(stderr, "Usage: ./a.out [-c -x] [fileName]\n");
     exit(1);
   }
 
   if(strcmp(argv[1], "-x") && strcmp(argv[1], "-c")) {
-    cerr << " x/c fail\n";
+    fprintf(stderr, "Improper run option.\n");
     fprintf(stderr, "Usage: ./a.out [-c -x] [fileName]\n");
     exit(1);
   }
 
-  if(!fopen(argv[2], "r")){
-    cerr << "Open fail\n";
-    cerr << "Unable to open file\n";
+  if(strcmp(argv[2], "-") && !fopen(argv[2], "r")){
+    fprintf(stderr, "Unable to open file.\n");
+    fprintf(stderr, "Usage: ./a.out [-c -x] [fileName]\n");
     exit(1);
   }
   

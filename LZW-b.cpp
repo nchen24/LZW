@@ -1,19 +1,35 @@
 #include <iostream>
-#include <fstream>
 #include <assert.h>
 #include "LZW-a.h"
 using namespace std;
 
-static inline void printShortAsBytes(uint16_t code){
+//Emits 'code' to fp in the form of two bytes. 
+static inline void shortToOutStream(FILE* fp, uint16_t code){
   unsigned char left  = code >> 8;     //Shift right to get left 8 bits
   unsigned char right = code & 0x00ff; //Mask off the left 8 bits
-  putc(left,  stdout); 
-  putc(right, stdout); 
+  putc(left,  fp); 
+  putc(right, fp); 
+}
+
+//Gets two bytes from fp, stores them in the '*code'.  Returns true on success.
+static inline bool inStreamToShort(FILE *fp, uint16_t *code){
+  int c = getc(fp);
+  if(feof(fp))
+    return false;
+  *code = c << 8;
+  c = getc(fp);
+  if(feof(fp))
+    return false;
+  *code += c;
+  return true;
 }
 
 LZW::LZW(char *fileName, char runMode){
   mode = runMode;
-  fp = fopen(fileName, "r");
+  if(!strcmp(fileName, "-"))
+    fp = stdin;
+  else
+    fp = fopen(fileName, "r");
 
   string s;
   for (unsigned i = 0 ; i < 256 ; i++){
@@ -37,9 +53,8 @@ void LZW::run(){
 void LZW::compressLZW(){
   string curString = "";
   uint16_t nextCode = 257;
-  unsigned it = 0;
-
   int c; 
+
   while((c = getc(fp)) != EOF){
     curString += c;
     if(!codes.count(curString)){
@@ -48,39 +63,24 @@ void LZW::compressLZW(){
       assert(nextCode != 65535);
 
       curString.erase(curString.size() - 1);
-      printShortAsBytes(codes[curString]);
+      shortToOutStream(stdout, codes[curString]);
 
       curString = c;
     }
-    it++;
   }
-
   if(codes.count(curString))
-      printShortAsBytes(codes[curString]);
-
-  putc(0x01, stdout); putc(0x00, stdout); // EOF marker
+      shortToOutStream(stdout, codes[curString]);
+  shortToOutStream(stdout, 256); // EOF marker
 }
 
 void LZW::extractLZW(){
-  string prevString = "";
-  string curString  = "";
-  unsigned int nextCode = 257;
-
+  string prevString = ""; string curString  = "";
+  uint16_t nextCode = 257;
   uint16_t code;
 
-  string s;
-  int c;
-  ifstream fin("out");
-  while((c= getc(fp)) != EOF){
-    code = c << 8;
-    c = getc(fp);
-    assert(!feof(fp));
-    code += c;
-    
-    if (code == 256){
-      cerr << "Normal break\n";
+  while(inStreamToShort(fp, &code)){
+    if (code == 256)
       break;
-    }
     if(!strings.count(code))
       strings[code] = prevString + prevString[0];
 
@@ -91,7 +91,5 @@ void LZW::extractLZW(){
       nextCode++;
     }
     prevString = curString;
-
   }
-
 }
