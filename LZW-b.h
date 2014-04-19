@@ -15,7 +15,8 @@ class LZW{
     void compressLZW();
     void extractLZW();
 
-    std::map<std::string, unsigned int> codes;
+    void initMap();
+    void resetMap();
+    std::map<std::string, uint16_t> codes;
     std::map<uint16_t, std::string> strings;
-
 };

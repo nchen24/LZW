@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for f in ~/projects/testObjects/calgary/*
+for f in ./calgary/*
 do
   echo "Processing $f"
   ./verify.sh $f

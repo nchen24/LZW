@@ -15,3 +15,4 @@ inSize=$1
 
 echo "File: $inFile"
 echo "\tOriginal: $inSize\tCompressed: $outSize"
+rm fin out
